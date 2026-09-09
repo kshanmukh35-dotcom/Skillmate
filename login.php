@@ -345,7 +345,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       max-height:360px;
       object-fit:contain;
       object-position:left center;
-      filter:drop-shadow(0 18px 28px rgba(15,23,42,0.10));
+      background:transparent;
+      opacity:0.92;
+      mix-blend-mode:normal;
+      filter:drop-shadow(0 0 0 rgba(0,0,0,0))
+             saturate(0.8)
+             contrast(0.96)
+             brightness(1.02);
+      border:none;
+      outline:none;
+      display:block;
     }
 
     h1{
@@ -663,7 +672,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <img
           class="heroImage"
-          src="PROJECT LOGO.png"
+          src="PROJECT_LOGO_transparent.png"
           alt="SkillMate learning community logo"
         >
 
