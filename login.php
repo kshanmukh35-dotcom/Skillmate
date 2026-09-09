@@ -860,7 +860,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             minlength="8"
             pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
             required
-            placeholder="Create password (8+ chars, A-Z, 0-9, symbol)"
+            placeholder="Need: uppercase letter, number, letter"
+            title="Need: uppercase letter, number, letter"
           >
 
           <input
