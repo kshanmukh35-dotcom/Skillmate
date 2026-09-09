@@ -128,7 +128,7 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     .messaging-shell {
       display: grid; grid-template-columns: 360px 1fr; gap: 18px; margin-top: 8px;
     }
-    .sidebar, .chat-panel { padding: 18px; border-radius: 28px; }
+    .sidebar, .chat-panel { padding: 18px; border-radius: 28px; position:relative }
 
     .search-box {
       display: flex; align-items: center; gap: 8px; padding: 11px 13px; border-radius: 999px; background: rgba(255,255,255,0.92);
@@ -165,6 +165,12 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid rgba(79,70,229,0.12); margin-bottom: 12px;
     }
     .profile-row { display: flex; align-items: center; gap: 10px; }
+    .chat-content-inner {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
     .profile-row .avatar { width: 46px; height: 46px; }
     .header-actions { display: flex; gap: 8px; }
     .icon-btn {
@@ -181,11 +187,40 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     .bubble-meta { display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 0.75rem; margin-top: 6px; opacity: 0.82; }
     .bubble.incoming .bubble-meta { justify-content: flex-start; }
     .message-input {
-      display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 18px; background: rgba(255,255,255,0.9); border: 1px solid rgba(79,70,229,0.12); margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px 10px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(79,70,229,0.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 6px 18px rgba(79,70,229,0.08);
+      margin-top: 10px;
+      min-height: 56px;
     }
-    .message-input input { flex: 1; border: 0; outline: none; background: transparent; font: inherit; color: var(--text); }
+    .message-input input {
+      flex: 1;
+      border: 0;
+      outline: none;
+      background: transparent;
+      font: inherit;
+      color: var(--text);
+      min-width: 0;
+      font-size: 1rem;
+    }
     .mini-btn { border: 0; width: 38px; height: 38px; border-radius: 50%; background: rgba(79,70,229,0.1); color: var(--primary); cursor: pointer; }
-    .send-btn { width: auto; padding: 0 14px; border-radius: 999px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-weight: 800; }
+    .send-btn {
+      width: auto;
+      min-width: 92px;
+      height: 42px;
+      padding: 0 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      font-weight: 800;
+      box-shadow: 0 10px 22px rgba(79,70,229,0.22);
+    }
 
     .empty-state {
       display: grid; place-items: center; text-align: center; padding: 28px; border-radius: 22px; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,255,0.92)); color: var(--muted); min-height: 240px; border: 1px dashed rgba(79,70,229,0.2);
@@ -283,24 +318,117 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
               </div>
             </div>
             <div class="header-actions">
-              <button class="icon-btn" type="button" title="Voice Call">📞</button>
-              <button class="icon-btn" type="button" title="Video Call">📹</button>
-              <button class="icon-btn" type="button" title="More options">⋯</button>
+              <button
+    class="icon-btn"
+    id="voiceCallBtn"
+    type="button"
+    title="Voice Call">
+    📞
+</button>
+              
             </div>
           </div>
+          <div id="callBox" style="
+    display:none;
+    position:absolute;
+    inset:0;
+    z-index:1000;
+    background:rgba(15,23,42,0.96);
+    color:white;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+">
+    <div id="incomingCallBox" style="
+    display:none;
+    position:fixed;
+    top:30px;
+    right:30px;
+    z-index:2000;
+    width:320px;
+    padding:25px;
+    background:white;
+    border-radius:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+    text-align:center;
+">
 
-          <div id="messagesArea" class="messages-area"></div>
+    <div style="font-size:45px;">📞</div>
 
-          <div class="message-input">
-            <button class="mini-btn" type="button" title="Emoji">😊</button>
-            <button class="mini-btn" type="button" title="Attachment">📎</button>
-            <input id="messageInput" type="text" placeholder="Type a message...">
-            <button class="mini-btn send-btn" id="sendBtn" type="button">Send</button>
+    <h3 id="incomingCaller">Incoming Call</h3>
+
+    <p>Someone is calling you...</p>
+
+    <div style="
+        display:flex;
+        gap:10px;
+        justify-content:center;
+    ">
+
+        <button id="acceptCallBtn" style="
+            border:none;
+            padding:12px 20px;
+            border-radius:12px;
+            background:#22c55e;
+            color:white;
+            font-weight:700;
+            cursor:pointer;
+        ">
+            🟢 Accept
+        </button>
+
+        <button id="rejectCallBtn" style="
+            border:none;
+            padding:12px 20px;
+            border-radius:12px;
+            background:#ef4444;
+            color:white;
+            font-weight:700;
+            cursor:pointer;
+        ">
+            🔴 Reject
+        </button>
+
+    </div>
+</div>
+
+    <div style="font-size:70px;">📞</div>
+
+    <h2 id="callTitle">Calling...</h2>
+
+    <p id="callStatus">Connecting...</p>
+
+    <button id="endCallBtn" style="
+        margin-top:30px;
+        border:none;
+        border-radius:50px;
+        padding:14px 28px;
+        background:#ef4444;
+        color:white;
+        font-size:16px;
+        font-weight:700;
+        cursor:pointer;
+    ">
+        🔴 End Call
+    </button>
+
+</div>
+
+          <div class="chat-content-inner">
+            <div id="messagesArea" class="messages-area"></div>
+
+            <div class="message-input">
+              <input id="messageInput" type="text" placeholder="Type a message...">
+              <button class="mini-btn send-btn" id="sendBtn" type="button">Send</button>
+            </div>
           </div>
         </div>
       </section>
     </section>
   </main>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
   <script>
     // ===== Server-provided conversations =====
@@ -490,6 +618,362 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     if (conversations.length) {
       selectConversation(conversations[0].id);
     }
+    // ======================================================
+// SKILLMATE VOICE CALL
+// ======================================================
+
+const myPeerId = "skillmate-user-<?php echo $userId; ?>";
+
+let peer = new Peer(myPeerId);
+
+let localStream = null;
+let currentCall = null;
+let incomingCall = null;
+
+
+// ------------------------------------------------------
+// PEER CONNECTED
+// ------------------------------------------------------
+
+peer.on("open", function(id) {
+
+    console.log("SkillMate Peer ID:", id);
+
+});
+
+
+// ------------------------------------------------------
+// PEER ERROR
+// ------------------------------------------------------
+
+peer.on("error", function(error) {
+
+    console.error("PeerJS Error:", error);
+
+});
+
+
+// ------------------------------------------------------
+// START CALL
+// ------------------------------------------------------
+
+async function startVoiceCall() {
+
+    if (!activeConversationId) {
+
+        alert("Please select a person first.");
+
+        return;
+    }
+
+
+    try {
+
+        // Ask microphone permission
+
+        localStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false
+        });
+
+
+        const receiverPeerId =
+            "skillmate-user-" + activeConversationId;
+
+
+        console.log(
+            "Calling:",
+            receiverPeerId
+        );
+
+
+        showCallBox(
+            "Calling " + chatName.textContent + "..."
+        );
+
+
+        currentCall = peer.call(
+            receiverPeerId,
+            localStream
+        );
+
+
+        currentCall.on("stream", function(remoteStream) {
+
+            playRemoteAudio(remoteStream);
+
+            document.getElementById("callStatus")
+                .textContent = "Connected";
+
+        });
+
+
+        currentCall.on("close", function() {
+
+            endCall();
+
+        });
+
+
+        currentCall.on("error", function(error) {
+
+            console.error(error);
+
+            alert("Unable to connect the call.");
+
+            endCall();
+
+        });
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        alert(
+            "Microphone permission is required for calling."
+        );
+
+    }
+
+}
+
+
+// ------------------------------------------------------
+// RECEIVE CALL
+// ------------------------------------------------------
+
+peer.on("call", function(call) {
+
+    incomingCall = call;
+
+    const callerPeerId = call.peer;
+
+    console.log(
+        "Incoming call from:",
+        callerPeerId
+    );
+
+
+    document.getElementById("incomingCaller")
+        .textContent = "Incoming SkillMate Call";
+
+
+    document.getElementById("incomingCallBox")
+        .style.display = "block";
+
+});
+
+
+// ------------------------------------------------------
+// ACCEPT CALL
+// ------------------------------------------------------
+
+document.getElementById("acceptCallBtn")
+    .addEventListener("click", async function() {
+
+        try {
+
+            localStream =
+                await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false
+                });
+
+
+            incomingCall.answer(localStream);
+
+
+            currentCall = incomingCall;
+
+
+            currentCall.on("stream", function(remoteStream) {
+
+                playRemoteAudio(remoteStream);
+
+                document.getElementById("incomingCallBox")
+                    .style.display = "none";
+
+
+                showCallBox("Call Connected");
+
+
+                document.getElementById("callStatus")
+                    .textContent = "Connected";
+
+            });
+
+
+            currentCall.on("close", function() {
+
+                endCall();
+
+            });
+
+
+            document.getElementById("incomingCallBox")
+                .style.display = "none";
+
+            showCallBox("Connecting...");
+
+        }
+
+        catch(error) {
+
+            console.error(error);
+
+            alert(
+                "Microphone permission is required."
+            );
+
+        }
+
+    });
+
+
+// ------------------------------------------------------
+// REJECT CALL
+// ------------------------------------------------------
+
+document.getElementById("rejectCallBtn")
+    .addEventListener("click", function() {
+
+        if (incomingCall) {
+
+            incomingCall.close();
+
+        }
+
+        incomingCall = null;
+
+        document.getElementById("incomingCallBox")
+            .style.display = "none";
+
+    });
+
+
+// ------------------------------------------------------
+// DISPLAY CALL BOX
+// ------------------------------------------------------
+
+function showCallBox(title) {
+
+    const box =
+        document.getElementById("callBox");
+
+    box.style.display = "flex";
+
+    document.getElementById("callTitle")
+        .textContent = title;
+
+    document.getElementById("callStatus")
+        .textContent = "Connecting...";
+
+}
+
+
+// ------------------------------------------------------
+// REMOTE AUDIO
+// ------------------------------------------------------
+
+function playRemoteAudio(stream) {
+
+    let audio =
+        document.getElementById("remoteAudio");
+
+
+    if (!audio) {
+
+        audio = document.createElement("audio");
+
+        audio.id = "remoteAudio";
+
+        audio.autoplay = true;
+
+        document.body.appendChild(audio);
+
+    }
+
+
+    audio.srcObject = stream;
+
+    audio.play().catch(function(error) {
+
+        console.error(
+            "Audio playback error:",
+            error
+        );
+
+    });
+
+}
+
+
+// ------------------------------------------------------
+// END CALL
+// ------------------------------------------------------
+
+function endCall() {
+
+    console.log("Call ended");
+
+
+    if (currentCall) {
+
+        currentCall.close();
+
+        currentCall = null;
+
+    }
+
+
+    if (incomingCall) {
+
+        incomingCall.close();
+
+        incomingCall = null;
+
+    }
+
+
+    if (localStream) {
+
+        localStream.getTracks().forEach(function(track) {
+
+            track.stop();
+
+        });
+
+        localStream = null;
+
+    }
+
+
+    document.getElementById("callBox")
+        .style.display = "none";
+
+
+    document.getElementById("incomingCallBox")
+        .style.display = "none";
+
+}
+
+
+// ------------------------------------------------------
+// END CALL BUTTON
+// ------------------------------------------------------
+
+document.getElementById("endCallBtn")
+    .addEventListener(
+        "click",
+        endCall
+    );
+    document.getElementById("voiceCallBtn")
+    .addEventListener(
+        "click",
+        startVoiceCall
+    );
   </script>
 </body>
 </html>
