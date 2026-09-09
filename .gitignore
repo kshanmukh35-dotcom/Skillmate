@@ -1,0 +1,19 @@
+# Database connection / private credentials
+db_connect.php
+
+# User-uploaded files
+uploads/
+
+# Local environment files
+.env
+.env.*
+
+# VS Code settings
+.vscode/
+
+# Qodo local files
+.qodo/
+
+# OS files
+.DS_Store
+Thumbs.db
