@@ -517,6 +517,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-bottom:10px
     }
 
+    .passwordWrap{
+      position:relative;
+      display:block;
+      margin-bottom:10px;
+    }
+
+    .passwordWrap .input{
+      margin-bottom:0;
+      padding-right:46px;
+    }
+
+    .togglePassword{
+      position:absolute;
+      top:50%;
+      right:12px;
+      transform:translateY(-50%);
+      width:28px;
+      height:28px;
+      border:none;
+      background:transparent;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      color:#5f6f86;
+      padding:0;
+      border-radius:8px;
+      transition:background .12s ease, color .12s ease;
+    }
+
+    .togglePassword:hover{
+      background:rgba(15,23,42,0.04);
+      color:var(--primary);
+    }
+
+    .togglePassword svg{
+      width:18px;
+      height:18px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
     .smallMuted{
       color:var(--muted);
       font-size:14px;
@@ -795,14 +839,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             placeholder="Email address"
           >
 
-          <input
-            id="loginPass"
-            name="password"
-            class="input"
-            type="password"
-            required
-            placeholder="Password"
-          >
+          <div class="passwordWrap">
+            <input
+              id="loginPass"
+              name="password"
+              class="input"
+              type="password"
+              required
+              placeholder="Password"
+            >
+            <button
+              type="button"
+              class="togglePassword"
+              data-target="loginPass"
+              aria-label="Show password"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
 
           <div class="helper">
 
@@ -861,26 +918,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             placeholder="Email address"
           >
 
-          <input
-            id="regPass"
-            name="password"
-            class="input"
-            type="password"
-            minlength="8"
-            pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
-            required
-            placeholder="Need: uppercase letter, number, letter"
-            title="Need: uppercase letter, number, letter"
-          >
+          <div class="passwordWrap">
+            <input
+              id="regPass"
+              name="password"
+              class="input"
+              type="password"
+              minlength="8"
+              pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
+              required
+              placeholder="Need: uppercase letter, number, letter"
+              title="Need: uppercase letter, number, letter"
+            >
+            <button
+              type="button"
+              class="togglePassword"
+              data-target="regPass"
+              aria-label="Show password"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
 
-          <input
-            id="regConfirmPass"
-            name="confirm_password"
-            class="input"
-            type="password"
-            required
-            placeholder="Re-enter password"
-          >
+          <div class="passwordWrap">
+            <input
+              id="regConfirmPass"
+              name="confirm_password"
+              class="input"
+              type="password"
+              required
+              placeholder="Re-enter password"
+            >
+            <button
+              type="button"
+              class="togglePassword"
+              data-target="regConfirmPass"
+              aria-label="Show password"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
 
           <!--
              Role input REMOVED.
@@ -968,6 +1051,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     const cancelRegister =
       document.getElementById('cancelRegister');
+
+    document.querySelectorAll('.togglePassword').forEach((button) => {
+      button.addEventListener('click', () => {
+        const targetId = button.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+
+        if (!input) {
+          return;
+        }
+
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        button.setAttribute(
+          'aria-label',
+          isPassword ? 'Hide password' : 'Show password'
+        );
+
+        button.innerHTML = isPassword
+          ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle><path d="M3 3l18 18"></path></svg>'
+          : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+      });
+    });
 
 
     function setActiveTab(tab){
