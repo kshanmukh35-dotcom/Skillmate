@@ -49,6 +49,7 @@ if ($incomingResult) {
   while ($row = mysqli_fetch_assoc($incomingResult)) {
     $incomingRequests[] = [
       'id' => (int)$row['id'],
+      'other_id' => (int)$row['sender_id'],
       'name' => $row['sender_name'] ?: 'Student',
       'profileImg' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
       'skill' => $row['skill_to_learn'] ?: 'Skill Exchange',
@@ -66,6 +67,7 @@ if ($sentResult) {
   while ($row = mysqli_fetch_assoc($sentResult)) {
     $sentRequests[] = [
       'id' => (int)$row['id'],
+      'other_id' => (int)$row['receiver_id'],
       'name' => $row['receiver_name'] ?: 'Teacher',
       'profileImg' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
       'skill' => $row['skill_to_learn'] ?: 'Skill Exchange',
@@ -285,7 +287,7 @@ if ($sentResult) {
               <input type="hidden" name="action" value="reject">
               <button class="btn-small btn-danger" type="submit">Reject</button>
             </form>` : ''}
-            ${item.status === 'Accepted' ? `<a class="btn-small btn-primary" href="chat.php?request_id=${item.id}" style="display:inline-flex; align-items:center; justify-content:center;">Chat</a>` : ''}
+            ${item.status === 'Accepted' ? `<a class="btn-small btn-primary" href="messages.php?other_id=${item.other_id}" style="display:inline-flex; align-items:center; justify-content:center;">Chat</a>` : ''}
             <button class="btn-small btn-ghost" data-action="profile" data-id="${item.id}">View Profile</button>
           </div>`;
         incomingPanel.appendChild(card);
@@ -306,7 +308,7 @@ if ($sentResult) {
         const card = document.createElement('article');
         card.className = 'request-card';
         let actionMarkup = '';
-        if (item.status === 'Accepted') actionMarkup = `<a class="btn-small btn-primary" href="chat.php?request_id=${item.id}" style="display:inline-flex; align-items:center; justify-content:center;">Open Chat</a>`;
+        if (item.status === 'Accepted') actionMarkup = `<a class="btn-small btn-primary" href="messages.php?other_id=${item.other_id}" style="display:inline-flex; align-items:center; justify-content:center;">Open Chat</a>`;
         else if (item.status === 'Pending') actionMarkup = '<span class="muted">Waiting for Response</span>';
         else actionMarkup = '<span class="muted">Request Declined</span>';
         card.innerHTML = `

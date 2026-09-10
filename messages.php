@@ -6,6 +6,7 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 $userId = (int)$_SESSION['user_id'];
+$requestedOtherId = isset($_GET['other_id']) ? (int)$_GET['other_id'] : 0;
 
 // Build conversations: latest message per other user
 $conversations = [];
@@ -433,6 +434,7 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
   <script>
     // ===== Server-provided conversations =====
     const conversations = <?php echo json_encode($conversations, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+    const requestedOtherId = <?php echo (int)$requestedOtherId; ?>;
 
     // ===== DOM references =====
     const chatList = document.getElementById('chatList');
@@ -616,7 +618,10 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     updateStats();
     renderChatList();
     if (conversations.length) {
-      selectConversation(conversations[0].id);
+      const preferredConversation = requestedOtherId > 0
+        ? conversations.find(item => Number(item.id) === requestedOtherId)
+        : null;
+      selectConversation(preferredConversation ? preferredConversation.id : conversations[0].id);
     }
     // ======================================================
 // SKILLMATE VOICE CALL
