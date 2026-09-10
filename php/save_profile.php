@@ -368,6 +368,21 @@ if (!mysqli_stmt_execute($updateStmt)) {
 
 mysqli_stmt_close($updateStmt);
 
+$displayName = trim($firstName . ' ' . $lastName);
+if ($displayName !== '') {
+    $_SESSION['full_name'] = $displayName;
+
+    $userUpdateStmt = mysqli_prepare(
+        $conn,
+        "UPDATE users SET full_name = ? WHERE user_id = ?"
+    );
+
+    if ($userUpdateStmt) {
+        mysqli_stmt_bind_param($userUpdateStmt, 'si', $displayName, $user_id);
+        mysqli_stmt_execute($userUpdateStmt);
+        mysqli_stmt_close($userUpdateStmt);
+    }
+}
 
 /* ---------------------------------------------------------
    SUCCESS
