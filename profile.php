@@ -40,6 +40,7 @@ if (!$user) {
 
 $accountFullName = $user['full_name'] ?? '';
 $accountEmail = $user['email'] ?? '';
+$currentUserName = trim($_SESSION['full_name'] ?? '') !== '' ? $_SESSION['full_name'] : ($accountFullName ?: 'Student');
 
 /* ---------------------------------------------------------
    GET PROFILE INFORMATION
@@ -78,6 +79,7 @@ $interests = $profile['interests'] ?? '';
 $aboutMe = $profile['about_me'] ?? '';
 
 $profileImage = $profile['profile_image'] ?? '';
+$currentUserProfileImage = $profileImage ?: '';
 
 /* ---------------------------------------------------------
    STATUS MESSAGE
@@ -122,6 +124,7 @@ if (isset($_GET['success'])) {
 
 :root{
   --primary:#2f4d9a;
+  --primary-soft:#edf2ff;
   --bg:#f3f5f9;
   --surface:#ffffff;
   --surface-soft:#f8f9fc;
@@ -173,19 +176,26 @@ body{
 .header{
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
+  align-items:center;
+  gap:16px;
   margin-bottom:18px;
   padding:18px 20px;
-  border-radius:20px;
+  border-radius:18px;
   background:linear-gradient(135deg,#eef2ff,#f8fbff);
   border:1px solid rgba(79,70,229,0.12);
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
 }
 
 .logo{
   width:58px;
   height:58px;
-  border-radius:16px;
+  border-radius:14px;
   overflow:hidden;
   display:grid;
   place-items:center;
@@ -200,10 +210,18 @@ body{
   object-fit:cover;
 }
 
+.eyebrow{
+  margin:0 0 3px;
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--primary);
+  font-weight:800;
+}
+
 h1{
   margin:0;
   font-size:clamp(24px,3vw,30px);
-  transform:translateX(6px);
   letter-spacing:-0.02em;
 }
 
@@ -211,17 +229,23 @@ p.lead{
   margin:8px 0 0;
   color:var(--muted);
   line-height:1.7;
-  transform:translateX(6px);
+}
+
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
 }
 
 .menu{
   display:inline-flex;
   align-items:center;
   gap:8px;
-  flex-wrap:nowrap;
-  padding:8px;
+  flex-wrap:wrap;
+  padding:6px;
   border-radius:999px;
-  background:#fff;
+  background:var(--surface-soft);
   border:1px solid var(--border);
   box-shadow:0 8px 18px rgba(79,70,229,0.06);
 }
@@ -233,10 +257,74 @@ p.lead{
   padding:8px 12px;
   border-radius:999px;
   text-decoration:none;
-  color:var(--primary);
+  color:var(--muted);
   font-weight:700;
   white-space:nowrap;
+  font-size:13px;
+  transition:all .16s ease;
 }
+
+.menu a:hover{
+  background:#fff;
+  color:var(--primary);
+  box-shadow:0 4px 10px rgba(15,23,42,0.04);
+}
+
+.menu a.active{
+  background:var(--primary-soft);
+  color:var(--primary);
+}
+
+.notification-bell {
+  width:42px;
+  height:42px;
+  border:none;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  text-decoration:none;
+  background:#fff;
+  color:var(--primary);
+  border:1px solid rgba(15, 23, 42, 0.08);
+  font-size:20px;
+  box-shadow:0 8px 24px rgba(15, 23, 42, 0.06);
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+
+.notification-bell:hover {
+  transform:translateY(-2px);
+  background:var(--primary-soft);
+  box-shadow:0 14px 30px rgba(79, 70, 229, 0.12);
+}
+
+.profile-pill{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid var(--border);
+  box-shadow:0 6px 15px rgba(15,23,42,0.04);
+}
+
+.avatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  object-fit:cover;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,var(--primary),#5d78d8);
+  color:#fff;
+  font-weight:800;
+  font-size:14px;
+  border:2px solid #fff;
+  box-shadow:0 4px 12px rgba(15,23,42,0.12);
+}
+
+.profile-pill strong{ display:block; font-size:13px; color:var(--text); }
+.profile-pill span{ display:block; color:var(--muted); font-size:11px; }
 
 form{
   display:grid;
@@ -472,32 +560,37 @@ label{
 
 <div class="header">
 
+<div class="header-left">
+
 <div class="logo">
 <img src="PROJECT LOGO.png" alt="SkillMate logo">
 </div>
 
 <div>
 
-
+<p class="eyebrow">Student dashboard</p>
 <h1>Complete your profile</h1>
 
-<p class="lead">
-Build your SkillMate identity and help other students understand your background.
-</p>
+
 
 </div>
 
-<nav>
+</div>
 
-<div class="menu">
+<div class="topbar-right">
+
+<nav class="menu" aria-label="Main navigation">
 
 <a href="index.php">Home</a>
-<a href="profile.php">Profile</a>
+
 <a href="about.php">About</a>
 
-</div>
-
 </nav>
+
+<a href="notification.php" class="notification-bell" title="Notifications" aria-label="Notifications">🔔</a>
+
+
+</div>
 
 </div>
 

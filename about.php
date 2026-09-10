@@ -1,5 +1,25 @@
 <?php
 session_start();
+
+$isLoggedIn = !empty($_SESSION['user_id']);
+$currentUserName = 'Student';
+$currentUserProfileImage = '';
+
+if ($isLoggedIn) {
+    require_once __DIR__ . '/db_connect.php';
+    $currentUserId = (int)$_SESSION['user_id'];
+    $userProfileStmt = mysqli_prepare($conn, "SELECT u.full_name, p.profile_image FROM users u LEFT JOIN profiles p ON p.user_id = u.user_id WHERE u.user_id = ? LIMIT 1");
+    if ($userProfileStmt) {
+        mysqli_stmt_bind_param($userProfileStmt, 'i', $currentUserId);
+        mysqli_stmt_execute($userProfileStmt);
+        $userProfileResult = mysqli_stmt_get_result($userProfileStmt);
+        if ($row = mysqli_fetch_assoc($userProfileResult)) {
+            $currentUserName = trim($row['full_name'] ?? '') !== '' ? $row['full_name'] : 'Student';
+            $currentUserProfileImage = trim($row['profile_image'] ?? '');
+        }
+        mysqli_stmt_close($userProfileStmt);
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -57,11 +77,11 @@ session_start();
             align-items:center;
             justify-content:space-between;
             gap:20px;
-            padding:14px 18px;
+            padding:18px 20px;
             margin-bottom:30px;
             background:rgba(255,255,255,0.94);
             border:1px solid var(--border);
-            border-radius:16px;
+            border-radius:18px;
             box-shadow:var(--shadow);
         }
 
@@ -75,41 +95,109 @@ session_start();
         }
 
         .brand-logo{
-            width:42px;
-            height:42px;
-            border-radius:12px;
+            width:58px;
+            height:58px;
+            border-radius:14px;
             overflow:hidden;
             background:#fff;
             border:1px solid var(--border);
             box-shadow:0 8px 20px rgba(79,70,229,0.08);
         }
 
-        .brand-logo img{width:100%;height:100%;object-fit:cover;}
+        .brand-logo img{width:100%;height:100%;object-fit:contain;}
 
         .nav-links{
             display:flex;
             gap:8px;
             flex-wrap:wrap;
             justify-content:flex-end;
+            padding:6px;
+            border-radius:999px;
+            background:var(--primary-soft);
+            border:1px solid rgba(79,70,229,0.08);
         }
 
         .nav-links a{
             text-decoration:none;
-            color:var(--primary);
-            font-size:14px;
+            color:var(--muted);
+            font-size:13px;
             font-weight:700;
-            padding:9px 13px;
-            border-radius:10px;
-            transition:background .2s ease, transform .2s ease;
+            padding:8px 12px;
+            border-radius:999px;
+            transition:all .2s ease;
         }
 
         .nav-links a:hover{
-            background:var(--primary-soft);
+            background:#fff;
+            color:var(--primary);
             transform:translateY(-1px);
+            box-shadow:0 4px 10px rgba(15,23,42,0.04);
         }
 
-            transform:translateY(-1px);
+        .nav-links a.active{
+            background:#fff;
+            color:var(--primary);
+            box-shadow:0 4px 10px rgba(15,23,42,0.04);
         }
+
+        .top-nav-right{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+
+        .notification-bell {
+            width:42px;
+            height:42px;
+            border:none;
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            text-decoration:none;
+            background:#fff;
+            color:var(--primary);
+            border:1px solid rgba(15, 23, 42, 0.08);
+            font-size:20px;
+            box-shadow:0 8px 24px rgba(15, 23, 42, 0.06);
+            transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+        }
+
+        .notification-bell:hover {
+            transform:translateY(-2px);
+            background:var(--primary-soft);
+            box-shadow:0 14px 30px rgba(79, 70, 229, 0.12);
+        }
+
+        .profile-pill{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding:6px 10px;
+            border-radius:999px;
+            background:#fff;
+            border:1px solid var(--border);
+            box-shadow:0 6px 15px rgba(15,23,42,0.04);
+        }
+
+        .profile-pill .avatar{
+            width:38px;
+            height:38px;
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            background:linear-gradient(135deg,var(--primary),#5d78d8);
+            color:#fff;
+            font-weight:800;
+            font-size:14px;
+            border:2px solid #fff;
+            box-shadow:0 4px 12px rgba(15,23,42,0.12);
+            object-fit:cover;
+        }
+
+        .profile-pill strong{display:block;font-size:13px;color:var(--text)}
+        .profile-pill span{display:block;color:var(--muted);font-size:11px}
+        .login-link{padding:8px 12px;border-radius:999px;background:#fff;color:var(--primary);text-decoration:none;font-weight:700;border:1px solid var(--border)}
 
 
         /* =========================================
@@ -621,7 +709,7 @@ session_start();
              NAVIGATION
         ====================================== -->
 
-        <nav class="top-nav">
+        <nav class="top-nav" aria-label="Main navigation">
 
             <div class="brand">
 
@@ -638,25 +726,26 @@ session_start();
 
             </div>
 
+            <div class="top-nav-right">
+                <div class="nav-links">
 
-            <div class="nav-links">
+                    <a href="index.php">Home</a>
+                    <a href="teach.php">Teach</a>
+                    <a href="learn.php">Learn</a>
+                    <a href="requests.php">Requests</a>
+                    <a href="messages.php">Messages</a>
+                    <a href="profile.php">Profile</a>
+                    <a href="about.php" class="active">About</a>
 
-                <a href="index.php">
-                    Home
-                </a>
+                </div>
 
-                <a href="profile.php">
-                    Profile
-                </a>
+                <?php if ($isLoggedIn): ?>
+                    <a href="notification.php" class="notification-bell" title="Notifications" aria-label="Notifications">🔔</a>
 
-                <a href="teach.php">
-                    Teach
-                </a>
-
-                <a href="learn.php">
-                    Learn
-                </a>
-
+                    
+                <?php else: ?>
+                    <a href="login.php" class="login-link">Login</a>
+                <?php endif; ?>
             </div>
 
         </nav>

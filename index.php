@@ -17,8 +17,9 @@ $profileQuery = mysqli_query(
 
 $profile = mysqli_fetch_assoc($profileQuery);
 
+$currentUserName = trim($_SESSION['full_name'] ?? '') !== '' ? $_SESSION['full_name'] : 'New User';
 $profileImage = $profile['profile_image'] ?? '';
-$profileName = trim($_SESSION['full_name'] ?? '') !== '' ? $_SESSION['full_name'] : 'New User';
+$profileName = $currentUserName;
 ?>
 
 <!doctype html>
@@ -161,34 +162,18 @@ $profileName = trim($_SESSION['full_name'] ?? '') !== '' ? $_SESSION['full_name'
           <a href="profile.php">Profile</a>
           <a href="about.php">About</a>
         </div>
-        <a href="notification.php" class="notification-bell" title="Notifications">
-    🔔
-</a>
-        
-         <div class="profile-pill">
-
-    <?php if (!empty($profileImage)): ?>
-
-        <img
-            class="avatar"
-            src="<?php echo htmlspecialchars($profileImage); ?>"
-            alt="Profile Photo"
-        >
-
-    <?php else: ?>
-
-        <div class="avatar" id="avatarInitials">
-            SM
+        <a href="notification.php" class="notification-bell" title="Notifications" aria-label="Notifications">🔔</a>
+        <div class="profile-pill">
+          <?php if (!empty($profileImage)): ?>
+            <img class="avatar" src="<?php echo htmlspecialchars($profileImage); ?>" alt="Profile Photo">
+          <?php else: ?>
+            <div class="avatar" id="avatarInitials"><?php echo htmlspecialchars(strtoupper(substr($profileName, 0, 2))); ?></div>
+          <?php endif; ?>
+          <div>
+            <strong id="topUserName"><?php echo htmlspecialchars($profileName); ?></strong>
+            <span>Active now</span>
+          </div>
         </div>
-
-    <?php endif; ?>
-
-    <div>
-        <strong><?php echo htmlspecialchars($profileName); ?></strong>
-        <span>Active now</span>
-    </div>
-
-</div>
       </div>
     </header>
 

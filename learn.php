@@ -15,6 +15,20 @@ $sessionUser = [
     'email' => isset($_SESSION['email']) ? $_SESSION['email'] : ''
 ];
 
+$currentUserName = trim($sessionUser['name'] ?: 'Student');
+$currentUserProfileImage = '';
+
+$userProfileStmt = mysqli_prepare($conn, "SELECT p.profile_image FROM profiles p WHERE p.user_id = ? LIMIT 1");
+if ($userProfileStmt) {
+    mysqli_stmt_bind_param($userProfileStmt, 'i', $currentUserId);
+    mysqli_stmt_execute($userProfileStmt);
+    mysqli_stmt_bind_result($userProfileStmt, $dbProfileImage);
+    if (mysqli_stmt_fetch($userProfileStmt)) {
+        $currentUserProfileImage = $dbProfileImage ?: '';
+    }
+    mysqli_stmt_close($userProfileStmt);
+}
+
 $successMessage = isset($_GET['success']) && $_GET['success'] === '1'
     ? 'Your exchange request was sent successfully.'
     : '';
@@ -1148,11 +1162,16 @@ footer{
 
       <a href="learn.php" class="active">Learn</a>
 
+      
+
+      <a href="messages.php">Messages</a>
+
       <a href="profile.php">Profile</a>
 
       <a href="about.php">About</a>
 
     </div>
+
 
     <a
     href="notification.php"
@@ -1164,25 +1183,8 @@ footer{
     🔔
 </a>
 
-    <div class="profile-pill">
+    
 
-      <div class="avatar" id="avatarInitials">
-        SM
-      </div>
-
-      <div>
-
-        <strong id="topUserName">
-          Student
-        </strong>
-
-        <span>
-          Active now
-        </span>
-
-      </div>
-
-    </div>
 
   </div>
 

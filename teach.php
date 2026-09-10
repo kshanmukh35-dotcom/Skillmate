@@ -21,6 +21,7 @@ $userQuery = mysqli_prepare(
 );
 
 $currentUserName = 'Student';
+$currentUserProfileImage = '';
 
 if ($userQuery) {
 
@@ -42,6 +43,21 @@ if ($userQuery) {
     }
 
     mysqli_stmt_close($userQuery);
+}
+
+$userProfileQuery = mysqli_prepare(
+    $conn,
+    "SELECT profile_image FROM profiles WHERE user_id = ? LIMIT 1"
+);
+
+if ($userProfileQuery) {
+    mysqli_stmt_bind_param($userProfileQuery, 'i', $userId);
+    mysqli_stmt_execute($userProfileQuery);
+    mysqli_stmt_bind_result($userProfileQuery, $dbProfileImage);
+    if (mysqli_stmt_fetch($userProfileQuery)) {
+        $currentUserProfileImage = $dbProfileImage ?: '';
+    }
+    mysqli_stmt_close($userProfileQuery);
 }
 
 
@@ -1435,16 +1451,25 @@ if ($skillsQuery) {
         Home
       </a>
 
+      <a href="teach.php" class="active">
+        Teach
+      </a>
+
+      <a href="learn.php">
+        Learn
+      </a>
+
+      
+      <a href="messages.php">
+        Messages
+      </a>
+
       <a href="profile.php">
         Profile
       </a>
 
       <a href="about.php">
         About
-      </a>
-
-      <a href="teach.php" class="active">
-        Teach
       </a>
 
     </div>
@@ -1461,29 +1486,7 @@ if ($skillsQuery) {
 </a>
 
 
-    <div class="profile-pill">
-
-      <div
-        class="avatar"
-        id="avatarInitials"
-      >
-        SM
-      </div>
-
-
-      <div>
-
-        <strong id="topUserName">
-          Student
-        </strong>
-
-        <span>
-          Active now
-        </span>
-
-      </div>
-
-    </div>
+    
 
   </div>
 

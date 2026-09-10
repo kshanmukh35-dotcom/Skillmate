@@ -6,6 +6,20 @@ if (!isset($_SESSION['user_id'])) {
   exit();
 }
 $userId = (int)$_SESSION['user_id'];
+$currentUserName = $_SESSION['full_name'] ?? 'Student';
+$currentUserProfileImage = '';
+
+$userProfileStmt = mysqli_prepare($conn, "SELECT p.profile_image FROM profiles p WHERE p.user_id = ? LIMIT 1");
+if ($userProfileStmt) {
+  mysqli_stmt_bind_param($userProfileStmt, 'i', $userId);
+  mysqli_stmt_execute($userProfileStmt);
+  mysqli_stmt_bind_result($userProfileStmt, $dbProfileImage);
+  if (mysqli_stmt_fetch($userProfileStmt)) {
+    $currentUserProfileImage = $dbProfileImage ?: '';
+  }
+  mysqli_stmt_close($userProfileStmt);
+}
+
 $requestedOtherId = isset($_GET['other_id']) ? (int)$_GET['other_id'] : 0;
 
 // Build conversations: latest message per other user
@@ -92,17 +106,36 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       -webkit-backdrop-filter: blur(18px);
     }
 
-    .navbar {
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      padding: 18px 22px; border-radius: 999px; margin-bottom: 20px;
+    .topbar-shell{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      padding:18px 20px;
+      border-radius:18px;
+      background:var(--surface-strong);
+      box-shadow:var(--shadow);
+      border:1px solid rgba(15,23,42,0.08);
+      margin-bottom:20px;
     }
-
-    .brand { font-weight: 800; font-size: 1.05rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--primary); }
-    .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
-    .nav-links a {
-      padding: 9px 14px; border-radius: 999px; color: var(--muted); font-weight: 700; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 7px;
-    }
-    .nav-links a:hover, .nav-links a.active { color: var(--primary); background: rgba(79, 70, 229, 0.10); }
+    .topbar-left{display:flex;align-items:center;gap:12px;min-width:0}
+    .topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .logo{width:58px;height:58px;border-radius:14px;overflow:hidden;display:grid;place-items:center;background:#fff;border:1px solid rgba(15,23,42,0.08);box-shadow:0 8px 18px rgba(15,23,42,0.05);position:relative;isolation:isolate;transition:transform .2s ease}
+    .logo img{width:100%;height:100%;object-fit:cover}
+    .logo-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--primary)}
+    .eyebrow{margin:0 0 3px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--primary);font-weight:800}
+    .topbar-title{margin:0;font-size:clamp(20px,2.3vw,24px);letter-spacing:-0.02em}
+    .lead{color:var(--muted);margin-top:8px;line-height:1.7;max-width:680px}
+    .top-nav-links{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px;border-radius:999px;background:rgba(79, 70, 229, 0.04);border:1px solid rgba(79, 70, 229, 0.08)}
+    .top-nav-links a{padding:8px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:700;font-size:13px;transition:all .16s ease}
+    .top-nav-links a:hover{background:#fff;color:var(--primary);box-shadow:0 4px 10px rgba(15,23,42,0.04)}
+    .top-nav-links a.active{background:rgba(79, 70, 229, 0.10);color:var(--primary)}
+    .notification-bell{width:42px;height:42px;border:none;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--primary);box-shadow:0 6px 16px rgba(15,23,42,0.05);border:1px solid rgba(15,23,42,0.08);cursor:pointer;transition:transform .16s ease,box-shadow .16s ease;text-decoration:none}
+    .notification-bell:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(15,23,42,0.08)}
+    .profile-pill{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid rgba(15,23,42,0.08);box-shadow:0 6px 15px rgba(15,23,42,0.04)}
+    .profile-pill .avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff;font-weight:800;font-size:14px;border:2px solid #fff;box-shadow:0 4px 12px rgba(15,23,42,0.12)}
+    .profile-pill strong{display:block;font-size:13px;color:var(--text)}
+    .profile-pill span{display:block;color:var(--muted);font-size:11px}
     .badge-dot {
       display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px;
       background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-size: 0.78rem; font-weight: 800;
@@ -257,14 +290,31 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
 </head>
 <body>
   <main class="page">
-    <header class="navbar glass">
-      <a href="index.php" class="brand"><img src="PROJECT LOGO.png" alt="SkillMate logo" style="height:32px; display:inline-block; vertical-align:middle;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block'"><span style="display:none; vertical-align:middle; font-weight:800; color:#4f46e5;">SM</span></a>
-      <nav class="nav-links" aria-label="Main navigation">
-        <a href="index.php">Home</a>
-        <a href="profile.php">Profile</a>
-        <a href="about.php">About</a>
-        <a class="active" href="messages.php">Messages <span class="badge-dot" id="notifBadge">2</span></a>
-      </nav>
+    <header class="topbar-shell glass">
+      <div class="topbar-left">
+        <div class="logo">
+          <img src="PROJECT LOGO.png" alt="SkillMate logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <span class="logo-fallback" style="display:none;">SM</span>
+        </div>
+        <div>
+          <p class="eyebrow">Student dashboard</p>
+          <h1 class="topbar-title">Skill Dashboard <span style="font-size:13px;color:var(--muted);font-weight:700;margin-left:8px;"><?php echo htmlspecialchars($_SESSION['full_name'] ?? 'Student'); ?></span></h1>
+          <p class="lead">A student-first skill exchange platform — teach what you know, learn what you need.</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <nav class="top-nav-links" aria-label="Main navigation">
+          <a href="index.php">Home</a>
+          <a href="teach.php">Teach</a>
+          <a href="learn.php">Learn</a>
+          <a href="requests.php">Requests</a>
+          <a href="messages.php" class="active">Messages <span class="badge-dot" id="notifBadge">2</span></a>
+          <a href="profile.php">Profile</a>
+          <a href="about.php">About</a>
+        </nav>
+        <a href="notification.php" class="notification-bell" title="Notifications" aria-label="Notifications">🔔</a>
+        
+      </div>
     </header>
 
     <section class="hero glass">
