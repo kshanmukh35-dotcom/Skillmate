@@ -11,7 +11,7 @@ $requestedOtherId = isset($_GET['other_id']) ? (int)$_GET['other_id'] : 0;
 // Build conversations: latest message per other user
 $conversations = [];
 $convSql = "
-SELECT t.other_id, u.full_name, u.role, m.message AS last_message, m.created_at AS last_time
+SELECT t.other_id, u.full_name, u.role, p.profile_image, m.message AS last_message, m.created_at AS last_time
 FROM (
   SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS other_id, MAX(created_at) AS last_at
   FROM messages
@@ -20,6 +20,7 @@ FROM (
 ) t
 JOIN messages m ON ((m.sender_id = ? AND m.receiver_id = t.other_id) OR (m.receiver_id = ? AND m.sender_id = t.other_id)) AND m.created_at = t.last_at
 LEFT JOIN users u ON u.user_id = t.other_id
+LEFT JOIN profiles p ON p.user_id = t.other_id
 ORDER BY m.created_at DESC
 ";
 
@@ -35,7 +36,7 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       'role' => $row['role'] ?: 'Member',
       'skill' => '',
       'status' => 'offline',
-      'profileImg' => '',
+      'profileImg' => $row['profile_image'] ?: '',
       'unread' => 0,
       'lastMessage' => $row['last_message'] ?: '',
       'lastTime' => $row['last_time'] ?: ''
@@ -150,7 +151,13 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       background: rgba(255,255,255,0.78); border: 1px solid rgba(79, 70, 229, 0.08); cursor: pointer; transition: all 0.2s ease;
     }
     .chat-item:hover, .chat-item.active { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08); border-color: rgba(79, 70, 229, 0.2); }
-    .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(79, 70, 229, 0.2); }
+    .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(79, 70, 229, 0.2); background: linear-gradient(135deg, #eef2ff, #e0e7ff); }
+    .avatar-fallback {
+      width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+      color: #312e81; font-weight: 800; display: flex; align-items: center; justify-content: center;
+      border: 2px solid rgba(79, 70, 229, 0.2); box-shadow: 0 8px 16px rgba(79, 70, 229, 0.08);
+      font-size: 0.92rem; letter-spacing: 0.06em;
+    }
     .chat-meta { min-width: 0; }
     .chat-name { font-weight: 800; display: flex; align-items: center; gap: 6px; }
     .chat-subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -312,7 +319,8 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
         <div id="chatContent" class="hidden">
           <div class="chat-header">
             <div class="profile-row">
-              <img id="chatAvatar" class="avatar" src="" alt="">
+              <img id="chatAvatar" class="avatar" src="" alt="" style="display:none;">
+              <div id="chatAvatarFallback" class="avatar-fallback" style="display:flex;">NA</div>
               <div>
                 <div id="chatName" class="chat-name"></div>
                 <div id="chatSkill" class="chat-subtitle"></div>
@@ -443,6 +451,7 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     const emptyState = document.getElementById('emptyState');
     const chatContent = document.getElementById('chatContent');
     const chatAvatar = document.getElementById('chatAvatar');
+    const chatAvatarFallback = document.getElementById('chatAvatarFallback');
     const chatName = document.getElementById('chatName');
     const chatSkill = document.getElementById('chatSkill');
     const messagesArea = document.getElementById('messagesArea');
@@ -454,6 +463,16 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     let activeConversationId = null;
 
     // ===== Rendering =====
+    function getInitials(name) {
+      if (!name) return 'U';
+      return name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0].toUpperCase())
+        .join('') || 'U';
+    }
+
     function renderChatList() {
       const query = searchConversation.value.trim().toLowerCase();
       const filtered = conversations.filter(item => {
@@ -475,10 +494,14 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       }
 
       filtered.forEach(item => {
+        const avatarHtml = item.profileImg
+          ? `<img class="avatar" src="${item.profileImg}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="avatar-fallback" style="display:none;">${getInitials(item.name)}</div>`
+          : `<div class="avatar-fallback">${getInitials(item.name)}</div>`;
+
         const card = document.createElement('div');
         card.className = `chat-item ${item.id === activeConversationId ? 'active' : ''}`;
         card.innerHTML = `
-          <img class="avatar" src="${item.profileImg}" alt="${item.name}">
+          ${avatarHtml}
           <div class="chat-meta">
             <div class="chat-name">${item.name} <span class="status-dot ${item.status === 'online' ? '' : 'offline'}"></span></div>
             <div class="chat-subtitle">${item.skill}</div>
@@ -496,9 +519,24 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
 
     function selectConversation(id) {
       activeConversationId = id;
-      const conv = conversations.find(item => item.id === id) || {};
-      chatAvatar.src = conv.profileImg || '';
-      chatAvatar.alt = conv.name || '';
+      const conv = conversations.find(item => Number(item.id) === Number(id)) || {};
+      const hasImage = !!(conv.profileImg && conv.profileImg.trim());
+      if (hasImage) {
+        chatAvatar.src = conv.profileImg;
+        chatAvatar.style.display = 'block';
+        chatAvatarFallback.style.display = 'none';
+        chatAvatar.onerror = function () {
+          this.style.display = 'none';
+          chatAvatarFallback.textContent = getInitials(conv.name || 'U');
+          chatAvatarFallback.style.display = 'flex';
+        };
+      } else {
+        chatAvatar.removeAttribute('src');
+        chatAvatar.style.display = 'none';
+        chatAvatarFallback.textContent = getInitials(conv.name || 'U');
+        chatAvatarFallback.style.display = 'flex';
+      }
+      chatAvatar.alt = conv.name || 'User';
       chatName.textContent = conv.name || 'User';
       chatSkill.textContent = conv.skill ? `${conv.skill} • ${conv.role}` : (conv.role || '');
       // Fetch thread from server
