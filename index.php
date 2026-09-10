@@ -18,7 +18,7 @@ $profileQuery = mysqli_query(
 $profile = mysqli_fetch_assoc($profileQuery);
 
 $profileImage = $profile['profile_image'] ?? '';
-$profileName = $profile['full_name'] ?? $_SESSION["full_name"] ?? '';
+$profileName = 'New User';
 ?>
 
 <!doctype html>
@@ -151,7 +151,7 @@ $profileName = $profile['full_name'] ?? $_SESSION["full_name"] ?? '';
         <div class="logo"><img src="PROJECT LOGO.png" alt="SkillMate logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="logo-fallback" style="display:none;font-weight:800;color:var(--primary);">SM</span></div>
         <div>
           <p class="eyebrow">Student dashboard</p>
-          <h1 class="topbar-title">Skill Dashboard <span id="userFullName" style="font-size:13px;color:var(--muted);font-weight:700;margin-left:8px;"><?php echo $_SESSION["full_name"];?></span></h1>
+          <h1 class="topbar-title">Skill Dashboard <span id="userFullName" style="font-size:13px;color:var(--muted);font-weight:700;margin-left:8px;">New User</span></h1>
           <p class="lead">A student-first skill exchange platform — teach what you know, learn what you need.</p>
         </div>
       </div>

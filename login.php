@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          * Store common login information.
                          */
                         $_SESSION['user_id'] = (int)$user['user_id'];
-                        $_SESSION['full_name'] = $user['full_name'];
+                        $_SESSION['full_name'] = 'New User';
                         $_SESSION['email'] = $user['email'];
 
                         /*
@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                              * Log the newly registered student in.
                              */
                             $_SESSION['user_id'] = $new_user_id;
-                            $_SESSION['full_name'] = $full_name;
+                            $_SESSION['full_name'] = 'New User';
                             $_SESSION['email'] = $email;
                             $_SESSION['role'] = 'student';
 
