@@ -1,0 +1,37 @@
+-- SQL schema for SkillMate roadmap module
+
+CREATE TABLE IF NOT EXISTS profiles (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  phone VARCHAR(50) NOT NULL,
+  college VARCHAR(255) NOT NULL,
+  education VARCHAR(255) DEFAULT NULL,
+  interests VARCHAR(255) DEFAULT NULL,
+  career_goal VARCHAR(100) DEFAULT NULL,
+  skills_teach TEXT DEFAULT NULL,
+  skills_learn TEXT DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_user_profile (user_id)
+);
+
+CREATE TABLE IF NOT EXISTS roadmap_progress (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  saved_progress TEXT NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_user_roadmap (user_id)
+);
+
+-- Existing users table example
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  phone VARCHAR(50) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) DEFAULT 'student',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
