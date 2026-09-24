@@ -398,6 +398,46 @@ label{
   font-weight:800;
 }
 
+.profile-side{
+  display:flex;
+  align-items:flex-start;
+}
+
+.profile-picture-card{
+  width:100%;
+  align-self:start;
+}
+
+.profile-card-title{
+  font-size:18px;
+  font-weight:800;
+  margin-bottom:14px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:var(--primary-soft);
+  color:var(--text);
+}
+
+.profile-picture-card .profile-picture-box{
+  justify-content:center;
+  min-height:170px;
+  margin-bottom:14px;
+}
+
+.profile-picture-card .profile-preview,
+.profile-picture-card .profile-placeholder{
+  width:120px;
+  height:120px;
+}
+
+.profile-picture-card .profile-preview{
+  border-width:3px;
+}
+
+.profile-picture-card .input{
+  display:block;
+}
+
 .readonly-field{
   background:#f8fafc;
   color:#475569;
@@ -489,36 +529,11 @@ label{
   border-color:rgba(248,113,113,0.2);
 }
 
-.infoCard{
-  display:grid;
-  gap:18px;
-  align-content:start;
-}
-
-.infoBox{
-  padding:20px;
-  border-radius:20px;
-  background:#fff;
-  border:1px solid rgba(79,70,229,0.1);
-  box-shadow:0 12px 28px rgba(79,70,229,0.04);
-}
-
-.infoBox strong{
-  display:block;
-  margin-bottom:6px;
-  font-size:17px;
-}
-
-.infoBox p{
-  margin:0;
-  color:var(--muted);
-  line-height:1.7;
-}
 
 @media (max-width:800px){
 
   .pageContent{
-    grid-template-columns:1fr;
+    grid-template-columns:1.1fr 0.9fr;
   }
 
   .header{
@@ -534,6 +549,10 @@ label{
 }
 
 @media (max-width:600px){
+
+  .pageContent{
+    grid-template-columns:1fr;
+  }
 
   .grid-2{
     grid-template-columns:1fr;
@@ -601,58 +620,6 @@ action="php/save_profile.php"
 method="POST"
 enctype="multipart/form-data"
 >
-
-
-<!-- PROFILE IMAGE -->
-
-<div>
-
-<label for="profile_image">
-Profile Picture
-</label>
-
-<div class="profile-picture-box">
-
-<?php if (!empty($profileImage)): ?>
-
-<img
-src="<?php echo htmlspecialchars($profileImage); ?>"
-class="profile-preview"
-alt="Profile picture"
->
-
-<?php else: ?>
-
-<div class="profile-placeholder">
-
-<?php
-$initial = strtoupper(substr($accountFullName, 0, 1));
-echo htmlspecialchars($initial ?: 'S');
-?>
-
-</div>
-
-<?php endif; ?>
-
-<div>
-
-<input
-type="file"
-id="profile_image"
-name="profile_image"
-class="input"
-accept="image/*"
->
-
-<p class="verify-note">
-Use a clear profile picture.
-</p>
-
-</div>
-
-</div>
-
-</div>
 
 
 <!-- FIRST + LAST NAME -->
@@ -1085,57 +1052,52 @@ echo $statusType === 'error'
 </section>
 
 
-<!-- RIGHT SIDE -->
+<!-- RIGHT SIDE: PROFILE PICTURE ONLY -->
 
-<aside class="infoCard">
+<aside class="profile-side">
 
-<div class="infoBox">
+<div class="card profile-picture-card">
 
-<strong>Why this matters</strong>
+<div class="profile-card-title">
+Profile Picture
+</div>
 
-<p>
-Your profile helps SkillMate understand your education,
-career goals and interests so that other students can
-know more about you before starting a skill exchange.
-</p>
+<div class="profile-picture-box">
+
+<?php if (!empty($profileImage)): ?>
+
+<img
+src="<?php echo htmlspecialchars($profileImage); ?>"
+class="profile-preview"
+alt="Profile picture"
+>
+
+<?php else: ?>
+
+<div class="profile-placeholder">
+
+<?php
+$initial = strtoupper(substr($accountFullName, 0, 1));
+echo htmlspecialchars($initial ?: 'S');
+?>
 
 </div>
 
-
-<div class="infoBox">
-
-<strong>Your Skills</strong>
-
-<p>
-Teaching skills are now managed separately from your
-profile. Go to the Teach page to add skills and select
-their categories.
-</p>
+<?php endif; ?>
 
 </div>
 
+<input
+type="file"
+id="profile_image"
+name="profile_image"
+class="input"
+form="profileForm"
+accept="image/*"
+>
 
-<div class="infoBox">
-
-<strong>Verification</strong>
-
-<p>
-Phone verification will use OTP verification, while
-college verification can be reviewed by the SkillMate
-administrator.
-</p>
-
-</div>
-
-
-<div class="infoBox">
-
-<strong>What happens next?</strong>
-
-<p>
-After saving your profile, you can add your teaching
-skills from the Teach page. Other users will then be
-able to discover those skills through the Learn page.
+<p class="verify-note">
+Use a clear profile picture.
 </p>
 
 </div>

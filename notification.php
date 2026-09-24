@@ -1811,56 +1811,8 @@ a {
         </nav>
 
 
-        <!-- PROFILE -->
-
-        <div class="profileChip">
-
-
-            <div class="profileAvatar">
-
-                <?php
-
-                echo htmlspecialchars(
-                    strtoupper(
-                        mb_substr(
-                            $userName,
-                            0,
-                            2
-                        )
-                    ),
-                    ENT_QUOTES,
-                    'UTF-8'
-                );
-
-                ?>
-
-            </div>
-
-
-            <div class="profileInfo">
-
-                <strong>
-
-                    <?php
-
-                    echo htmlspecialchars(
-                        $userName,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    );
-
-                    ?>
-
-                </strong>
-
-                <span>
-                    Active now
-                </span>
-
-            </div>
-
-
-        </div>
+       
+    
 
 
     </header>

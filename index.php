@@ -143,6 +143,62 @@ $profileName = $currentUserName;
 .default-profile span{font-size:70px;color:var(--primary);font-weight:300}
 .notification-bell {width: 52px;height: 52px;border-radius: 50%;display: grid;place-items: center;text-decoration: none;background: #ffffff;color: var(--primary);border: 1px solid rgba(15, 23, 42, 0.08);font-size: 20px;box-shadow:0 8px 24px rgba(15, 23, 42, 0.06);transition:transform .18s ease,box-shadow .18s ease,background .18s ease;}
 .notification-bell:hover {transform: translateY(-2px);background: var(--primary-soft);box-shadow:0 14px 30px rgba(79, 70, 229, 0.12);}
+.profile-image-link {
+    display: block;
+    cursor: pointer;
+}
+
+.profile-image-link .main-profile-image {
+    cursor: pointer;
+}
+.header-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-left:auto;
+}
+
+.profile-pill{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:0 6px 15px rgba(15,23,42,0.04);
+}
+
+.profile-pill:hover{
+    transform:translateY(-1px);
+}
+
+.avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    object-fit:cover;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,var(--primary),#5d78d8);
+    color:#fff;
+    font-weight:800;
+    font-size:14px;
+    border:2px solid #fff;
+    box-shadow:0 4px 12px rgba(15,23,42,0.12);
+}
+
+.profile-pill strong{
+    display:block;
+    font-size:13px;
+    color:var(--text);
+}
+
+.profile-pill span{
+    display:block;
+    color:var(--muted);
+    font-size:11px;
+}
     </style>
   </head>
   <body>
@@ -162,18 +218,30 @@ $profileName = $currentUserName;
           <a href="profile.php">Profile</a>
           <a href="about.php">About</a>
         </div>
-        <a href="notification.php" class="notification-bell" title="Notifications" aria-label="Notifications">🔔</a>
-        <div class="profile-pill">
-          <?php if (!empty($profileImage)): ?>
+        <div class="header-actions">
+
+    <!-- Notification -->
+    <div class="notification-btn">
+        <a href="notification.php">🔔</a>
+    </div>
+
+    <!-- Profile -->
+    <div class="profile-pill">
+        <?php if (!empty($profileImage)): ?>
             <img class="avatar" src="<?php echo htmlspecialchars($profileImage); ?>" alt="Profile Photo">
-          <?php else: ?>
-            <div class="avatar" id="avatarInitials"><?php echo htmlspecialchars(strtoupper(substr($profileName, 0, 2))); ?></div>
-          <?php endif; ?>
-          <div>
+        <?php else: ?>
+            <div class="avatar" id="avatarInitials">
+                <?php echo htmlspecialchars(strtoupper(substr($profileName, 0, 2))); ?>
+            </div>
+        <?php endif; ?>
+
+        <div>
             <strong id="topUserName"><?php echo htmlspecialchars($profileName); ?></strong>
             <span>Active now</span>
-          </div>
         </div>
+    </div>
+
+</div>
       </div>
     </header>
 
@@ -185,7 +253,7 @@ $profileName = $currentUserName;
               <h3>Explore</h3>
               <div class="actions-grid">
                 <a class="act" href="teach.php"><span class="nav-icon">✦</span><span>Teach</span></a>
-                <a class="act active" href="learn.php"><span class="nav-icon">◆</span><span>Learn</span></a>
+                <a class="act" href="learn.php"><span class="nav-icon">◆</span><span>Learn</span></a>
                 <a class="act" href="messages.php"><span class="nav-icon">✉</span><span>Messages</span></a>
                 <a class="act" href="requests.php"><span class="nav-icon">☰</span><span>Requests</span></a>
               </div>
@@ -212,11 +280,13 @@ $profileName = $currentUserName;
 
     <?php if (!empty($profileImage)): ?>
 
-        <img
-            src="<?php echo htmlspecialchars($profileImage); ?>"
-            alt="Your Profile Photo"
-            class="main-profile-image"
-        >
+       <a href="profile.php" class="profile-image-link">
+    <img
+        src="<?php echo htmlspecialchars($profileImage); ?>"
+        alt="Your Profile Photo"
+        class="main-profile-image"
+    >
+</a>
 
     <?php else: ?>
 
