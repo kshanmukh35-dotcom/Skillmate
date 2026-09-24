@@ -305,9 +305,9 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       <div class="topbar-right">
         <nav class="top-nav-links" aria-label="Main navigation">
           <a href="index.php">Home</a>
-          <a href="teach.php">Teach</a>
-          <a href="learn.php">Learn</a>
-          <a href="requests.php">Requests</a>
+          
+          
+          
           <a href="messages.php" class="active">Messages <span class="badge-dot" id="notifBadge">2</span></a>
           <a href="profile.php">Profile</a>
           <a href="about.php">About</a>

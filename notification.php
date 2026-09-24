@@ -1803,14 +1803,11 @@ a {
                 🔔 Notifications
             </a>
 
-            <a href="requests.php">
-                Requests
+            <a href="about.php">
+                About
             </a>
 
-            <a href="messages.php">
-                Messages
-            </a>
-
+           
         </nav>
 
 

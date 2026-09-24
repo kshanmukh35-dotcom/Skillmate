@@ -730,10 +730,8 @@ if ($isLoggedIn) {
                 <div class="nav-links">
 
                     <a href="index.php">Home</a>
-                    <a href="teach.php">Teach</a>
-                    <a href="learn.php">Learn</a>
-                    <a href="requests.php">Requests</a>
-                    <a href="messages.php">Messages</a>
+                    
+                    
                     <a href="profile.php">Profile</a>
                     <a href="about.php" class="active">About</a>
 

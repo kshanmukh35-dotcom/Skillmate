@@ -1455,14 +1455,10 @@ if ($skillsQuery) {
         Teach
       </a>
 
-      <a href="learn.php">
-        Learn
-      </a>
+      
 
       
-      <a href="messages.php">
-        Messages
-      </a>
+      
 
       <a href="profile.php">
         Profile

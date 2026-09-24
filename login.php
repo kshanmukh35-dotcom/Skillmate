@@ -927,8 +927,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               minlength="8"
               pattern="(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
               required
-              placeholder="Need: uppercase letter, number, letter"
-              title="Need: uppercase letter, number, letter"
+              placeholder="USE :- A - Z, a-z, SPECIAL SYMBOL, 1 - 9"
+              title="Need: UPPERCASE letter,NUMBER,SPECIAL SYMBOL"
             >
             <button
               type="button"

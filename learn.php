@@ -1158,13 +1158,13 @@ footer{
 
       <a href="index.php">Home</a>
 
-      <a href="teach.php">Teach</a>
+      
 
       <a href="learn.php" class="active">Learn</a>
 
       
 
-      <a href="messages.php">Messages</a>
+      
 
       <a href="profile.php">Profile</a>
 
