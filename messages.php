@@ -263,6 +263,29 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       box-shadow: 0 10px 22px rgba(79,70,229,0.22);
     }
 
+    .message-status {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(148,163,184,0.12);
+      border: 1px solid rgba(148,163,184,0.20);
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .message-input input:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
+    .send-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      box-shadow: none;
+    }
+
     .empty-state {
       display: grid; place-items: center; text-align: center; padding: 28px; border-radius: 22px; background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,255,0.92)); color: var(--muted); min-height: 240px; border: 1px dashed rgba(79,70,229,0.2);
     }
@@ -477,6 +500,7 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
           <div class="chat-content-inner">
             <div id="messagesArea" class="messages-area"></div>
 
+            <div id="messageStatus" class="message-status hidden"></div>
             <div class="message-input">
               <input id="messageInput" type="text" placeholder="Type a message...">
               <button class="mini-btn send-btn" id="sendBtn" type="button">Send</button>
@@ -507,10 +531,12 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     const messagesArea = document.getElementById('messagesArea');
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
+    const messageStatus = document.getElementById('messageStatus');
     const notifBadge = document.getElementById('notifBadge');
 
     let activeFilter = 'all';
     let activeConversationId = null;
+    let activeCanSend = false;
 
     // ===== Rendering =====
     function getInitials(name) {
@@ -567,6 +593,26 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       });
     }
 
+    function updateMessageComposer(canSend, requestStatus) {
+      const normalizedStatus = String(requestStatus || '').trim().toLowerCase();
+      activeCanSend = Boolean(canSend) || normalizedStatus === 'accepted';
+
+      messageInput.disabled = !activeCanSend;
+      sendBtn.disabled = !activeCanSend;
+
+      if (activeCanSend) {
+        messageInput.placeholder = 'Type a message...';
+        messageStatus.textContent = '';
+        messageStatus.classList.add('hidden');
+      } else {
+        messageInput.placeholder = 'Messaging is unavailable for this connection';
+        messageStatus.textContent = normalizedStatus === 'cancelled'
+          ? 'Connection cancelled — send a new request and wait until it is accepted to continue chatting.'
+          : 'Messaging is available only after the learning request is accepted.';
+        messageStatus.classList.remove('hidden');
+      }
+    }
+
     function selectConversation(id) {
       activeConversationId = id;
       const conv = conversations.find(item => Number(item.id) === Number(id)) || {};
@@ -599,8 +645,15 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
           }
           const msgs = data.messages.map(m => ({ sender: m.sender_id === <?php echo $userId; ?> ? 'outgoing' : 'incoming', text: m.message, time: m.created_at }));
           renderMessages(msgs);
+
+          // The server decides whether this conversation can currently send.
+          // Old messages remain visible even when the connection is cancelled.
+          updateMessageComposer(data.can_send, data.request_status);
         })
-        .catch(() => { messagesArea.innerHTML = '<div class="empty-state">Unable to load messages.</div>'; });
+        .catch(() => {
+          messagesArea.innerHTML = '<div class="empty-state">Unable to load messages.</div>';
+          updateMessageComposer(false, null);
+        });
       renderChatList();
       emptyState.classList.add('hidden');
       chatContent.classList.remove('hidden');
@@ -624,9 +677,13 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     }
 
     function addMessage(text) {
-      if (!activeConversationId) return;
+      if (!activeConversationId || !activeCanSend) return;
+
       const receiverId = activeConversationId;
+
       messageInput.disabled = true;
+      sendBtn.disabled = true;
+
       fetch('php/message_send.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -634,18 +691,28 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
       })
       .then(r => r.json())
       .then(data => {
-        messageInput.disabled = false;
         if (!data.success) {
           alert(data.error || 'Unable to send message');
+
+          if (data.request_status !== 'Accepted') {
+            updateMessageComposer(false, data.request_status);
+          } else {
+            updateMessageComposer(true, 'Accepted');
+          }
           return;
         }
-        // append outgoing message locally
+
         const now = new Date().toISOString().replace('T', ' ').split('.')[0];
         renderMessages([{ sender: 'outgoing', text, time: now }]);
-        // reload thread to reflect server state
+
+        // Reload the thread and re-check the current connection status.
         selectConversation(receiverId);
       })
-      .catch(() => { messageInput.disabled = false; alert('Network error'); });
+      .catch(() => {
+        messageInput.disabled = !activeCanSend;
+        sendBtn.disabled = !activeCanSend;
+        alert('Network error');
+      });
     }
 
     function updateStats() {
@@ -689,8 +756,11 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     searchConversation.addEventListener('input', renderChatList);
 
     sendBtn.addEventListener('click', () => {
+      if (!activeCanSend) return;
+
       const text = messageInput.value.trim();
       if (!text) return;
+
       addMessage(text);
       messageInput.value = '';
     });
@@ -698,11 +768,14 @@ if ($stmt = mysqli_prepare($conn, $convSql)) {
     messageInput.addEventListener('keydown', event => {
       if (event.key === 'Enter') {
         event.preventDefault();
-        sendBtn.click();
+        if (activeCanSend) {
+          sendBtn.click();
+        }
       }
     });
 
     // ===== Initial state =====
+    updateMessageComposer(false, null);
     updateStats();
     renderChatList();
     if (conversations.length) {

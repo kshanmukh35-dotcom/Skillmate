@@ -27,15 +27,96 @@ $successMessage = '';
 $errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'], $_POST['action'])) {
-  $requestId = (int)$_POST['request_id'];
-  $action = $_POST['action'] === 'accept' ? 'Accepted' : 'Rejected';
 
-  $updateSql = "UPDATE exchange_requests SET status = '$action' WHERE id = $requestId AND receiver_id = $userId";
-  if (mysqli_query($conn, $updateSql)) {
-    $successMessage = 'Request updated successfully.';
+  $requestId = (int)$_POST['request_id'];
+  $requestedAction = $_POST['action'];
+
+  if ($requestedAction === 'accept') {
+
+    $action = 'Accepted';
+
+    $updateSql = "
+      UPDATE exchange_requests
+      SET status = '$action'
+      WHERE id = $requestId
+      AND receiver_id = $userId
+      AND status = 'Pending'
+    ";
+
+  } elseif ($requestedAction === 'reject') {
+
+    $action = 'Rejected';
+
+    $updateSql = "
+      UPDATE exchange_requests
+      SET status = '$action'
+      WHERE id = $requestId
+      AND receiver_id = $userId
+      AND status = 'Pending'
+    ";
+
+  } elseif ($requestedAction === 'cancel') {
+
+    $action = 'Cancelled';
+
+    /*
+     * Cancel ONLY the selected request.
+     * The request ID identifies one exact row.
+     * The logged-in user must belong to that request.
+     */
+    $updateSql = "
+      UPDATE exchange_requests
+      SET status = '$action'
+      WHERE id = $requestId
+      AND status = 'Accepted'
+      AND (sender_id = $userId OR receiver_id = $userId)
+    ";
+
   } else {
-    $errorMessage = 'Unable to update the request right now.';
+
+    $updateSql = '';
+
   }
+
+  if (!empty($updateSql)) {
+
+    if (mysqli_query($conn, $updateSql)) {
+
+      if (mysqli_affected_rows($conn) > 0) {
+
+        if ($requestedAction === 'cancel') {
+
+          $successMessage =
+            'Connection cancelled. Your previous chat will remain available.';
+
+        } else {
+
+          $successMessage =
+            'Request updated successfully.';
+
+        }
+
+      } else {
+
+        $errorMessage =
+          'The selected request could not be updated.';
+
+      }
+
+    } else {
+
+      $errorMessage =
+        'Unable to update the request right now.';
+
+    }
+
+  } else {
+
+    $errorMessage =
+      'Invalid request action.';
+
+  }
+
 }
 
 $incomingSql = "
@@ -342,7 +423,19 @@ if ($sentResult) {
               <input type="hidden" name="action" value="reject">
               <button class="btn-small btn-danger" type="submit">Reject</button>
             </form>` : ''}
-            ${item.status === 'Accepted' ? `<a class="btn-small btn-primary" href="messages.php?other_id=${item.other_id}" style="display:inline-flex; align-items:center; justify-content:center;">Chat</a>` : ''}
+            ${item.status === 'Accepted' ? `
+  <a class="btn-small btn-primary" href="messages.php?other_id=${item.other_id}" style="display:inline-flex; align-items:center; justify-content:center;">
+    Chat
+  </a>
+
+  <form method="post" style="display:inline;">
+    <input type="hidden" name="request_id" value="${item.id}">
+    <input type="hidden" name="action" value="cancel">
+    <button class="btn-small btn-danger" type="submit">
+      Cancel Connection
+    </button>
+  </form>
+` : ''}
             <button class="btn-small btn-ghost" data-action="profile" data-id="${item.id}">View Profile</button>
           </div>`;
         incomingPanel.appendChild(card);
